@@ -27,6 +27,11 @@ const (
 	TransactionSourcePayment TransactionSource = "payment"
 )
 
+func ParseTransactionSource(value interface{}) *TransactionSource {
+	source := TransactionSource(value.(string))
+	return &source
+}
+
 func (e *GameStatus) Scan(value interface{}) error {
 	*e = GameStatus(value.(string))
 	return nil

@@ -8,6 +8,7 @@ import (
 	"github.com/ildomm/cceab/dao"
 	"github.com/ildomm/cceab/entity"
 	"net/http"
+	"strings"
 )
 
 // HealthHandler evaluates the health of the service and writes a standardized response.
@@ -33,12 +34,27 @@ func NewGameResultHandler(gameResultDAO dao.GameResultDAO) *gameResultHandler {
 
 // CreateGameResultFunc handles the request to create a new game result.
 func (h *gameResultHandler) CreateGameResultFunc(w http.ResponseWriter, r *http.Request) {
+	// Validate the headers.
+	transactionSource := entity.ParseTransactionSource(strings.ToLower(r.Header.Get("Source-Type")))
+	if transactionSource == nil {
+		WriteErrorResponse(w, http.StatusBadRequest, []string{entity.ErrInvalidTransactionSource.Error()})
+		return
+
+	}
+
+	// Validate the request body.
 	var req CreateGameResultRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		WriteErrorResponse(w, http.StatusBadRequest, []string{"invalid request body"})
 		return
 	}
 
+	// Validate the game status.
+	if req.GameStatus != entity.GameStatusWin && req.GameStatus != entity.GameStatusLost {
+		WriteErrorResponse(w, http.StatusBadRequest, []string{entity.ErrInvalidGameStatus.Error()})
+	}
+
+	// Extract the user ID from the request path.
 	vars := mux.Vars(r)
 	userId, err := uuid.Parse(vars["id"])
 	if err != nil {
@@ -46,7 +62,8 @@ func (h *gameResultHandler) CreateGameResultFunc(w http.ResponseWriter, r *http.
 		return
 	}
 
-	gameResult, err := h.gameResultDAO.CreateGameResult(r.Context(), userId, req.GameStatus, req.Amount, req.TransactionID)
+	// Perform the business logic.
+	gameResult, err := h.gameResultDAO.CreateGameResult(r.Context(), userId, req.GameStatus, req.Amount, *transactionSource, req.TransactionID)
 	if err != nil {
 
 		switch {
@@ -55,9 +72,6 @@ func (h *gameResultHandler) CreateGameResultFunc(w http.ResponseWriter, r *http.
 
 		case errors.Is(err, entity.ErrTransactionIdExists) || errors.Is(err, entity.ErrUserNegativeBalance):
 			WriteErrorResponse(w, http.StatusNotAcceptable, []string{err.Error()})
-
-		case errors.Is(err, entity.ErrInvalidGameStatus):
-			WriteErrorResponse(w, http.StatusBadRequest, []string{err.Error()})
 
 		default:
 			WriteErrorResponse(w, http.StatusInternalServerError, []string{err.Error()})
@@ -70,7 +84,7 @@ func (h *gameResultHandler) CreateGameResultFunc(w http.ResponseWriter, r *http.
 	WriteAPIResponse(w, http.StatusCreated, gameResultResponse)
 }
 
-// Transform domain.GameResult to api.GameResultResponse
+// Transform entity.GameResult to server.GameResultResponse
 func transformGameResultResponse(gameResult entity.GameResult) GameResultResponse {
 	return GameResultResponse{
 		ID:            gameResult.ID,

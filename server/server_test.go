@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"github.com/ildomm/cceab/entity"
 	"math/rand"
 	"net/http"
 	"testing"
@@ -58,7 +57,6 @@ func TestServerRun(t *testing.T) {
 	url := fmt.Sprintf("http://localhost:%d/api/v1/health", port)
 	req, err := http.NewRequest("GET", url, nil)
 	assert.NoError(t, err, "failed to create request")
-	req.Header.Set("source-type", string(entity.TransactionSourceGame))
 
 	// Use http.DefaultClient to send the request
 	resp, err := http.DefaultClient.Do(req)

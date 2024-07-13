@@ -21,16 +21,16 @@ func (m *mockGameResultDAO) CreateGameResult(
 	ctx context.Context,
 	userId uuid.UUID,
 	gameStatus entity.GameStatus,
-	Amount float64,
+	amount float64,
+	transactionSource entity.TransactionSource,
 	transactionID string) (*entity.GameResult, error) {
 
-	args := m.Called(ctx, userId, gameStatus, Amount, transactionID)
+	args := m.Called(ctx, userId, gameStatus, amount, transactionSource, transactionID)
 
-	if len(args) > 0 && args.Get(1) != nil {
-		return nil, args.Get(1).(error)
+	if arg := args.Get(0); arg != nil {
+		return arg.(*entity.GameResult), nil
 	}
-
-	return args.Get(0).(*entity.GameResult), nil
+	return nil, args.Error(1)
 }
 
 func (m *mockGameResultDAO) ValidateGameResults(ctx context.Context, totalGamesToCancel int) error {

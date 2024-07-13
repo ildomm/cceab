@@ -65,6 +65,7 @@ func TestGameResultFuncSuccess(t *testing.T) {
 		mock.Anything,
 		mock.Anything,
 		mock.Anything,
+		mock.Anything,
 	).Return(testGameResult, nil)
 
 	// Create the server and set the mock manager
@@ -189,6 +190,7 @@ func TestGameResultFuncUserNotFound(t *testing.T) {
 		mock.Anything,
 		mock.Anything,
 		mock.Anything,
+		mock.Anything,
 	).Return(nil, entity.ErrUserNotFound)
 
 	// Create the server and set the mock manager
@@ -234,6 +236,7 @@ func TestGameResultFuncTransactionIDExists(t *testing.T) {
 
 	// Set up mock expectations
 	mockDAO.On("CreateGameResult",
+		mock.Anything,
 		mock.Anything,
 		mock.Anything,
 		mock.Anything,
@@ -289,6 +292,7 @@ func TestGameResultFuncUserNegativeBalance(t *testing.T) {
 		mock.Anything,
 		mock.Anything,
 		mock.Anything,
+		mock.Anything,
 	).Return(nil, entity.ErrUserNegativeBalance)
 
 	// Create the server and set the mock manager
@@ -334,6 +338,7 @@ func TestGameResultFuncInvalidGameStatus(t *testing.T) {
 
 	// Set up mock expectations
 	mockDAO.On("CreateGameResult",
+		mock.Anything,
 		mock.Anything,
 		mock.Anything,
 		mock.Anything,

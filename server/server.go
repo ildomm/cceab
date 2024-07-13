@@ -64,7 +64,6 @@ func (s *Server) router() *mux.Router {
 	// Interceptors
 	r.Use(NewRecoverMiddleware())
 	r.Use(NewLoggingMiddleware())
-	r.Use(NewSourceTypeValidatorMiddleware())
 
 	r.HandleFunc("/api/v1/health", s.HealthHandler).Methods(http.MethodGet)
 

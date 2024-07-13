@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.0.8
+
+- Implement game results business logic
+  - Balance change calculation
+  - Game results persistence
+
 ## v0.0.7
 
 - Implement http layer
