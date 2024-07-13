@@ -17,6 +17,18 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+# Build directory is a temporary directory used during the build process.
+build/
+volume/
+VERSION
+
 # Go workspace file
 go.work
 go.work.sum
+
+# Ignore temporary files created by editors etc
+.vscode/
+.DS_STORE
+*.log
+.idea/*
+.run/*
