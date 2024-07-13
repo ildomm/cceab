@@ -1,0 +1,39 @@
+name: Continue Integration
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Build binaries
+      run: make build
+
+    - name: Unit tests
+      run: make unit-test
+
+    - name: Generate test coverage report
+      run: |
+        PKGS=$(go list ./... | grep -v -E 'cmd/api_handler|cmd/validator|test_helpers')
+        go test -coverprofile=./cover.out -covermode=atomic -coverpkg=$PKGS ./...
+
+    - name: Generate test coverage badge
+      uses: vladopajic/go-test-coverage@v2
+      with:
+        profile: cover.out
+        local-prefix: github.com/ildomm/cceab
+        threshold-total: 75
+        git-branch: badges
+        git-token: ${{ github.ref_name == 'main' && secrets.GITHUB_TOKEN || '' }}
