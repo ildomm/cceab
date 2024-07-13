@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.0.7
+
+- Implement http layer
+  - Define HTTP server handlers behavior
+  - Define HTTP server middleware behavior
+  - Define HTTP server error handling behavior
+
 ## v0.0.6
 
 - Define HTTP server

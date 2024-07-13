@@ -2,7 +2,10 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
+	"github.com/ildomm/cceab/entity"
 	"net/http"
+	"time"
 )
 
 // Response is the generic API response container.
@@ -59,4 +62,14 @@ func WriteAPIResponse(w http.ResponseWriter, code int, data interface{}) {
 type HealthResponse struct {
 	Status  string `json:"status"`
 	Version string `json:"version"`
+}
+
+type GameResultResponse struct {
+	ID                int                      `json:"id"`
+	UserID            uuid.UUID                `json:"userId"`
+	GameStatus        entity.GameStatus        `json:"state"`
+	TransactionSource entity.TransactionSource `json:"source"`
+	TransactionID     string                   `json:"transactionId"`
+	Amount            float64                  `json:"amount"`
+	CreatedAt         time.Time                `json:"createdAt"`
 }

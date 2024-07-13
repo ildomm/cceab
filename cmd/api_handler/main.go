@@ -51,14 +51,12 @@ func main() {
 	}
 	defer querier.Close()
 
-	// Initialize managers
-	//userManager := dao.NewUserDAO(querier)
+	// Initialize manager
 	//gameResultManager := dao.NewGameResultDAO(querier)
 
 	// Initialize the server
 	server := server.NewServer()
 	server.WithListenAddress(httpServerPort)
-	//server.WithUserManager(userManager)
 	//server.WithGameResultManager(gameResultManager)
 
 	log.Println("Starting server on", server.ListenAddress())

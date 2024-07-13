@@ -1,6 +1,9 @@
 package server
 
 import (
+	"fmt"
+	"github.com/ildomm/cceab/entity"
+	"math/rand"
 	"net/http"
 	"testing"
 	"time"
@@ -40,6 +43,8 @@ func TestServerConfigurationSetters(t *testing.T) {
 // TestServerRun tests the Run method of the server.
 func TestServerRun(t *testing.T) {
 	server := NewServer()
+	port := rand.Intn(1000) + 8000
+	server.WithListenAddress(port)
 
 	go func() {
 		err := server.Run()
@@ -47,9 +52,16 @@ func TestServerRun(t *testing.T) {
 	}()
 
 	// Send a request to the server
-	time.Sleep(1 * time.Second)                                  // Wait a moment for the server to start
-	resp, err := http.Get("http://localhost:8080/api/v1/health") // Assuming a health check endpoint exists
+	time.Sleep(1 * time.Second) // Wait a moment for the server to start
 
+	// Create a new request with the source-type header
+	url := fmt.Sprintf("http://localhost:%d/api/v1/health", port)
+	req, err := http.NewRequest("GET", url, nil)
+	assert.NoError(t, err, "failed to create request")
+	req.Header.Set("source-type", string(entity.TransactionSourceGame))
+
+	// Use http.DefaultClient to send the request
+	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err, "request to server failed")
 	assert.Equal(t, http.StatusOK, resp.StatusCode, "unexpected status code from health check")
 }

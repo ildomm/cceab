@@ -1,7 +1,8 @@
-package domain
+package entity
 
 import (
 	"database/sql/driver"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -55,7 +56,7 @@ func (e TransactionSource) Value() (driver.Value, error) {
 
 type GameResult struct {
 	ID                int               `db:"id" json:"id"`
-	UserID            string            `db:"user_id" json:"user_id"`
+	UserID            uuid.UUID         `db:"user_id" json:"user_id"`
 	GameStatus        GameStatus        `db:"game_status" json:"game_status"`
 	ValidationStatus  ValidationStatus  `db:"validation_status" json:"validation_status"`
 	TransactionSource TransactionSource `db:"transaction_source" json:"transaction_source"`

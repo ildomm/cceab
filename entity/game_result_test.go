@@ -1,4 +1,4 @@
-package domain
+package entity
 
 import (
 	"testing"
@@ -75,7 +75,7 @@ func TestTransactionSource_Value(t *testing.T) {
 
 func TestGameResult(t *testing.T) {
 	id := 1
-	userID := uuid.New().String()
+	userID := uuid.New()
 	gameStatus := GameStatusWin
 	validationStatus := ValidationStatusPending
 	transactionSource := TransactionSourceGame

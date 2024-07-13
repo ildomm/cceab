@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ildomm/cceab/entity"
 	"log"
 	"net/http"
 	"runtime"
@@ -122,5 +123,30 @@ func (lm LoggingMiddleware) perform(next http.Handler) http.Handler {
 
 		// Logs execution time of the request and other details
 		log.Printf("INFO: %s \"%s %s\" %d %dms\n", r.RemoteAddr, r.Method, r.URL.Path, recorder.Status, duration)
+	})
+}
+
+// SourceTypeValidatorMiddleware
+// Validates the content type of the request, and returns a 400 if the content type is invalid.
+type SourceTypeValidatorMiddleware struct{}
+
+// NewSourceTypeValidatorMiddleware initializes a new SourceTypeValidatorMiddleware
+// with a custom response
+func NewSourceTypeValidatorMiddleware() func(next http.Handler) http.Handler {
+	return SourceTypeValidatorMiddleware{}.perform
+}
+
+// perform is the middleware handler itself
+func (ctv SourceTypeValidatorMiddleware) perform(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sourceType := r.Header.Get("Source-Type")
+		switch entity.TransactionSource(sourceType) {
+		case entity.TransactionSourceGame, entity.TransactionSourceServer, entity.TransactionSourcePayment:
+			next.ServeHTTP(w, r)
+		default:
+			// Invalid source type, respond with an error
+			WriteErrorResponse(w, http.StatusBadRequest, []string{entity.ErrInvalidTransactionSource.Error()})
+			return
+		}
 	})
 }
