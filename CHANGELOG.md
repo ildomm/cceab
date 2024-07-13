@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.0.4
+
+- Define database models
+  - Create SQL migrations
+  - Define domain structs
+  - Define database querier interface
+
 ## v0.0.3
 
 - Configure CI

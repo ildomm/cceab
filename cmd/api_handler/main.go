@@ -1,4 +1,4 @@
-package api_handler
+package main
 
 import (
 	"context"
