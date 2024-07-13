@@ -25,9 +25,7 @@ jobs:
       run: make unit-test
 
     - name: Generate test coverage report
-      run: |
-        PKGS=$(go list ./... | grep -v -E 'cmd/api_handler|cmd/validator|test_helpers')
-        go test -coverprofile=./cover.out -covermode=atomic -coverpkg=$PKGS ./...
+      run: go test ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
 
     - name: Generate test coverage badge
       uses: vladopajic/go-test-coverage@v2
