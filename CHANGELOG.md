@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.0.5
+
+- Define DAO interfaces
+
 ## v0.0.4
 
 - Define database models
