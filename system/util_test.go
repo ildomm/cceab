@@ -66,3 +66,22 @@ func TestValidDbURL(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "postgres://user:pass@host:5432/dbname", url)
 }
+
+func TestParseHTTPPortDefault(t *testing.T) {
+	port, err := ParseHTTPPort([]string{})
+	require.NoError(t, err)
+	require.Equal(t, HttpServerPortDefault, port)
+}
+
+func TestParseHTTPPortCustom(t *testing.T) {
+	args := []string{"-http-server-port", "8080"}
+	port, err := ParseHTTPPort(args)
+	require.NoError(t, err)
+	require.Equal(t, 8080, port)
+}
+
+func TestParseHTTPPortInvalidPort(t *testing.T) {
+	args := []string{"-http-server-port", "notaport"}
+	_, err := ParseHTTPPort(args)
+	require.Error(t, err)
+}

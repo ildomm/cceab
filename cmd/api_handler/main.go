@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"github.com/ildomm/cceab/database"
+	"github.com/ildomm/cceab/server"
 	"github.com/ildomm/cceab/system"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -32,6 +35,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("parsing command line: %s", err)
 	}
+	httpServerPort, err := system.ParseHTTPPort(os.Args[1:])
+	if err != nil {
+		log.Fatalf("parsing command line: %s", err)
+	}
 
 	// Set up the database connection and run migrations
 	log.Printf("connecting to database")
@@ -44,5 +51,23 @@ func main() {
 	}
 	defer querier.Close()
 
-	// TODO: Implement the rest of the main function
+	// Initialize managers
+	//userManager := dao.NewUserDAO(querier)
+	//gameResultManager := dao.NewGameResultDAO(querier)
+
+	// Initialize the server
+	server := server.NewServer()
+	server.WithListenAddress(httpServerPort)
+	//server.WithUserManager(userManager)
+	//server.WithGameResultManager(gameResultManager)
+
+	log.Println("Starting server on", server.ListenAddress())
+
+	if err := server.Run(); err != nil {
+		if !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal("Could not start server on", server.ListenAddress())
+		} else {
+			log.Println("Server closed")
+		}
+	}
 }

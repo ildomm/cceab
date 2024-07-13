@@ -42,7 +42,7 @@ func ParseDBConnURL(args []string) (string, error) {
 	var dBConnURL string
 
 	fs := flag.FlagSet{}
-	fs.StringVar(&dBConnURL, "db", os.Getenv("DATABASE_URL"), "Postgres connection URL, eg: postgres://user:pass@host:5432/dbname. Must be a valid URL. Defaults to DATABASE_URL")
+	fs.StringVar(&dBConnURL, "db", os.Getenv("DATABASE_URL"), "Postgres connection URL, eg: postgres://user:pass@host:5432/dbname. Must be a valid URL.")
 
 	err := fs.Parse(args)
 	if err != nil {
@@ -61,4 +61,27 @@ func ParseDBConnURL(args []string) (string, error) {
 	}
 
 	return dBConnURL, nil
+}
+
+const (
+	HttpServerPortDefault = 8000
+)
+
+func ParseHTTPPort(args []string) (int, error) {
+	var httpServerPort int
+
+	fs := flag.FlagSet{}
+	fs.IntVar(
+		&httpServerPort,
+		"http-server-port",
+		HttpServerPortDefault,
+		fmt.Sprintf("The http server port to listen on for incoming API requests, eg: '8080', defaults to %d", HttpServerPortDefault),
+	)
+
+	err := fs.Parse(args)
+	if err != nil {
+		return 0, err
+	}
+
+	return httpServerPort, nil
 }
