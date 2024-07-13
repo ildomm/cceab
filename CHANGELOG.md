@@ -1,6 +1,9 @@
 # Change Log
 
+## v0.0.2
 
+- Configure database connection
+  
 ## v0.0.1
 
 - Repository setup

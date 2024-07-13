@@ -22,7 +22,7 @@ build: deps build-api_handler build-validator
 
 .PHONY: build-api_handler
 build-api_handler: deps
-	# Build the background job binary
+	# Build the http server job binary
 	cd cmd/api_handler && \
 		go build -ldflags="-X main.semVer=${VERSION}" \
         -o ../../build/api_handler
