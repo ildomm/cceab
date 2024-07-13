@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.0.3
+
+- Configure CI
+
 ## v0.0.2
 
 - Configure database connection
