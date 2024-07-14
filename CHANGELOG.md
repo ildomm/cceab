@@ -1,6 +1,10 @@
 # Change Log
 
 
+## v0.1.2
+
+- Define Dockerfile and docker-compose for local development
+
 ## v0.1.1
 
 - Refactoring GameResultRequest validators

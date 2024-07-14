@@ -50,7 +50,28 @@ Required environment variable for both application components:
 
 ## Deployment
 Steps to deploy the application using Docker:
-1. (pending)
+1. Run `docker-compose up --build`
+2. There will be already 9 users created in the database with the following ids:
+   - `11111111-1111-1111-1111-111111111111`
+   - `22222222-2222-2222-2222-222222222222`
+   - `33333333-3333-3333-3333-333333333333`
+   - `44444444-4444-4444-4444-444444444444`
+   - `55555555-5555-5555-5555-555555555555`
+   - `66666666-6666-6666-6666-666666666666`
+   - `77777777-7777-7777-7777-777777777777`
+   - `88888888-8888-8888-8888-888888888888`
+   - `99999999-9999-9999-9999-999999999999`
+3. The API Handler will be available at `http://localhost:8080`
+4. The Game Results validator will be running in the background.
+5. The Game Results API endpoint can be reached at `http://localhost:8000/api/v1/users/11111111-1111-1111-1111-111111111111/game_results`
+6. To send a post request to the API endpoint, you can use the following curl command:
+   ```bash
+   curl -X POST \
+    http://localhost:8000/api/v1/users/11111111-1111-1111-1111-111111111111/game_results \
+    -H 'Content-Type: application/json' \
+    -d '{"state": "win", "amount": 10.15, "transactionId": "10"}'
+
+   ```
 
 ## Testing
 ### Local tests:
@@ -63,7 +84,7 @@ Unit tests are all written with the standard go testing library.
 - Type `make coverage-total` to check the total tests coverage.
 
 ## Future improvements
-- (pending)
+- run `docker-compose ` to deploy the application locally.
 
 ## Missing features
 - 90% tests code coverage.
