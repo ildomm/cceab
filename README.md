@@ -49,7 +49,7 @@ Required environment variable for both application components:
 - `DATABASE_URL` - the Postgres database URL, eg: `postgres://user:password@host:port/database`
 
 ## Deployment
-Steps to deploy the application using Docker:
+Steps to run the application using Docker Compose:
 1. Run `docker-compose up --build`
 2. There will be already 9 users created in the database with the following ids:
    - `11111111-1111-1111-1111-111111111111`
