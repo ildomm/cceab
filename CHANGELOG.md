@@ -1,6 +1,10 @@
 # Change Log
 
 
+## v0.1.1
+
+- Refactoring GameResultRequest validators
+
 ## v0.1.0
 
 - Implement validator pipeline

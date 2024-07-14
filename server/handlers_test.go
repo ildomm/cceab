@@ -82,7 +82,7 @@ func TestGameResultFuncSuccess(t *testing.T) {
 	// Create the request body
 	reqBody := CreateGameResultRequest{
 		GameStatus:    "win",
-		Amount:        100,
+		Amount:        "100",
 		TransactionID: "123",
 	}
 	body, _ := json.Marshal(reqBody)
@@ -156,7 +156,7 @@ func TestGameResultFuncInvalidUserID(t *testing.T) {
 	// Create the request body
 	reqBody := CreateGameResultRequest{
 		GameStatus:    "win",
-		Amount:        100,
+		Amount:        "100",
 		TransactionID: "123",
 	}
 	body, _ := json.Marshal(reqBody)
@@ -207,7 +207,7 @@ func TestGameResultFuncUserNotFound(t *testing.T) {
 	// Create the request body
 	reqBody := CreateGameResultRequest{
 		GameStatus:    "win",
-		Amount:        100,
+		Amount:        "100",
 		TransactionID: "123",
 	}
 	body, _ := json.Marshal(reqBody)
@@ -258,7 +258,7 @@ func TestGameResultFuncTransactionIDExists(t *testing.T) {
 	// Create the request body
 	reqBody := CreateGameResultRequest{
 		GameStatus:    "win",
-		Amount:        100,
+		Amount:        "100",
 		TransactionID: "123",
 	}
 	body, _ := json.Marshal(reqBody)
@@ -309,7 +309,7 @@ func TestGameResultFuncUserNegativeBalance(t *testing.T) {
 	// Create the request body
 	reqBody := CreateGameResultRequest{
 		GameStatus:    "win",
-		Amount:        100,
+		Amount:        "100",
 		TransactionID: "123",
 	}
 	body, _ := json.Marshal(reqBody)
@@ -360,7 +360,7 @@ func TestGameResultFuncInvalidGameStatus(t *testing.T) {
 	// Create the request body
 	reqBody := CreateGameResultRequest{
 		GameStatus:    "invalid-status",
-		Amount:        100,
+		Amount:        "100",
 		TransactionID: "123",
 	}
 	body, _ := json.Marshal(reqBody)
@@ -411,7 +411,7 @@ func TestGameResultFuncInvalidTransactionSource(t *testing.T) {
 	// Create the request body
 	reqBody := CreateGameResultRequest{
 		GameStatus:    "invalid-status",
-		Amount:        100,
+		Amount:        "100",
 		TransactionID: "123",
 	}
 	body, _ := json.Marshal(reqBody)
@@ -432,4 +432,55 @@ func TestGameResultFuncInvalidTransactionSource(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "CreateDeviceFunc returned wrong status code for invalid game source")
+}
+
+// TestGameResultFuncInvalidAmountFormat tests the CreateGameResultFunc with an invalid amount
+func TestGameResultFuncInvalidAmountFormat(t *testing.T) {
+	mockDAO := test_helpers.NewMockGameResultDAO()
+
+	// Set up mock expectations
+	mockDAO.On("CreateGameResult",
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+	).Return(nil, entity.ErrInvalidGameStatus)
+
+	// Create the server and set the mock manager
+	server := NewServer()
+	port := rand.Intn(1000) + 8000
+	server.WithGameResultManager(mockDAO)
+	server.WithListenAddress(port)
+
+	go func() {
+		err := server.Run()
+		assert.NoError(t, err, "server failed to run")
+	}()
+
+	// Create the request body
+	reqBody := CreateGameResultRequest{
+		GameStatus:    "win",
+		Amount:        "ab.x.e",
+		TransactionID: "123",
+	}
+	body, _ := json.Marshal(reqBody)
+
+	// Create the request
+	url := fmt.Sprintf("http://localhost:%d/api/v1/users/%s/game_results", port, uuid.New().String())
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	require.NoError(t, err)
+	req.Header.Set("source-type", string(entity.TransactionSourceGame))
+
+	// Use httptest to create a server
+	testServer := httptest.NewServer(server.router())
+	defer testServer.Close()
+
+	// Execute the request
+	resp, err := http.DefaultClient.Do(req)
+	assert.NoError(t, err, "request to server failed")
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 }

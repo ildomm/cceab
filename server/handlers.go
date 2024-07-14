@@ -8,6 +8,7 @@ import (
 	"github.com/ildomm/cceab/dao"
 	"github.com/ildomm/cceab/entity"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -45,7 +46,14 @@ func (h *gameResultHandler) CreateGameResultFunc(w http.ResponseWriter, r *http.
 	// Validate the request body.
 	var req CreateGameResultRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		WriteErrorResponse(w, http.StatusBadRequest, []string{"invalid request body"})
+		WriteErrorResponse(w, http.StatusBadRequest, []string{entity.ErrRequestPayload.Error()})
+		return
+	}
+
+	// Validate amount type cast
+	amount, err := strconv.ParseFloat(req.Amount, 64)
+	if err != nil {
+		WriteErrorResponse(w, http.StatusBadRequest, []string{entity.ErrInvalidAmount.Error()})
 		return
 	}
 
@@ -63,7 +71,7 @@ func (h *gameResultHandler) CreateGameResultFunc(w http.ResponseWriter, r *http.
 	}
 
 	// Perform the business logic.
-	gameResult, err := h.gameResultDAO.CreateGameResult(r.Context(), userId, req.GameStatus, req.Amount, *transactionSource, req.TransactionID)
+	gameResult, err := h.gameResultDAO.CreateGameResult(r.Context(), userId, req.GameStatus, amount, *transactionSource, req.TransactionID)
 	if err != nil {
 
 		switch {
