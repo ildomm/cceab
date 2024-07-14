@@ -66,14 +66,14 @@ func (e TransactionSource) Value() (driver.Value, error) {
 }
 
 type GameResult struct {
-	ID                int               `db:"id" json:"id"`
-	UserID            uuid.UUID         `db:"user_id" json:"user_id"`
-	GameStatus        GameStatus        `db:"game_status" json:"game_status"`
-	ValidationStatus  ValidationStatus  `db:"validation_status" json:"validation_status"`
-	TransactionSource TransactionSource `db:"transaction_source" json:"transaction_source"`
-	TransactionID     string            `db:"transaction_id" json:"transaction_id"`
-	Amount            float64           `db:"amount" json:"amount"`
-	CreatedAt         time.Time         `db:"created_at" json:"created_at"`
+	ID                int               `db:"id"`
+	UserID            uuid.UUID         `db:"user_id"`
+	GameStatus        GameStatus        `db:"game_status"`
+	ValidationStatus  ValidationStatus  `db:"validation_status"`
+	TransactionSource TransactionSource `db:"transaction_source"`
+	TransactionID     string            `db:"transaction_id"`
+	Amount            float64           `db:"amount" `
+	CreatedAt         time.Time         `db:"created_at"`
 }
 
 func (dm *GameResult) ShouldBeCanceled() bool {

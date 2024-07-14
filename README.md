@@ -80,7 +80,9 @@ Unit tests are all written with the standard go testing library.
 - Type `make coverage-total` to check the total tests coverage.
 
 ## Future improvements
-- run `docker-compose ` to deploy the application locally.
+- Use Store procedures to calculate the balance.
+- Allow the Validator to be configurable for pause interval and total of games to validate.
+- (pending)
 
 ## Missing features
 - 90% tests code coverage.

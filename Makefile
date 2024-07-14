@@ -3,6 +3,7 @@ LINTER_VERSION = v1.59.1
 
 # Variables needed when building binaries
 VERSION := $(shell grep -oE -m 1 '([0-9]+)\.([0-9]+)\.([0-9]+)' CHANGELOG.md )
+GIT_SHA := $(shell git rev-parse HEAD )
 
 # To be used for dependencies not installed with gomod
 LOCAL_DEPS_INSTALL_LOCATION = /usr/local/bin
@@ -24,14 +25,14 @@ build: deps build-api_handler build-validator
 build-api_handler: deps
 	# Build the http server job binary
 	cd cmd/api_handler && \
-		go build -ldflags="-X main.semVer=${VERSION}" \
+		go build -ldflags="-X main.semVer=${VERSION} -X main.gitSha=${GIT_SHA}" \
         -o ../../build/api_handler
 
 .PHONY: build-validator
 build-validator: deps
 	# Build the background job binary
 	cd cmd/validator && \
-		go build -ldflags="-X main.semVer=${VERSION}" \
+		go build -ldflags="-X main.semVer=${VERSION} -X main.gitSha=${GIT_SHA}" \
         -o ../../build/validator
 
 .PHONY: unit-test
