@@ -21,5 +21,5 @@ type Querier interface {
 	SelectGameResultsByUser(ctx context.Context, userId uuid.UUID, validationStatus entity.ValidationStatus) ([]entity.GameResult, error)
 
 	UpdateUserBalance(ctx context.Context, txn sqlx.Tx, userId uuid.UUID, amount float64, validationStatus bool) error
-	UpdateGameResult(ctx context.Context, txn sqlx.Tx, gameResultId uuid.UUID, validationStatus entity.ValidationStatus) error
+	UpdateGameResult(ctx context.Context, txn sqlx.Tx, gameResultId int, validationStatus entity.ValidationStatus) error
 }

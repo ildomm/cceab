@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -157,4 +158,166 @@ func TestCreateGameResultDatabaseError(t *testing.T) {
 	games, err := mockQuerier.SelectGameResultsByUser(ctx, userId, entity.ValidationStatusPending)
 	assert.NoError(t, err)
 	assert.Len(t, games, 0, "There should be none game result")
+}
+
+func TestValidateGameResultsSuccess(t *testing.T) {
+	mockQuerier := test_helpers.NewMockQuerier()
+
+	instance := NewGameResultDAO(mockQuerier)
+
+	ctx := context.TODO()
+
+	userID := uuid.New()
+
+	// Mock select users with pending validation
+	mockQuerier.On("SelectUsersByValidationStatus", ctx, false).Return([]entity.User{
+		{
+			ID:      userID,
+			Balance: 100.0,
+		},
+	}, nil)
+
+	// Mock lock user row
+	mockQuerier.On("LockUserRow", ctx, mock.Anything, userID).Return(nil)
+
+	// Mock select game results for the user
+	mockQuerier.On("SelectGameResultsByUser", ctx, userID, entity.ValidationStatusPending).Return([]entity.GameResult{
+		{
+			ID:                1,
+			UserID:            userID,
+			GameStatus:        entity.GameStatusWin,
+			ValidationStatus:  entity.ValidationStatusPending,
+			TransactionSource: entity.TransactionSourceGame,
+			TransactionID:     "tx123",
+			Amount:            50.0,
+		},
+	}, nil)
+
+	// Mock update game result
+	mockQuerier.On("UpdateGameResult", ctx, mock.Anything, mock.Anything, entity.ValidationStatusCanceled).Return(nil)
+
+	// Mock update user balance
+	mockQuerier.On("UpdateUserBalance", ctx, mock.Anything, userID, mock.Anything, true).Return(nil)
+
+	// Mock transaction operations
+	mockQuerier.On("WithTransaction", mock.Anything, mock.AnythingOfType("func(*sqlx.Tx) error")).Return(nil)
+
+	err := instance.ValidateGameResults(ctx, 1)
+
+	assert.NoError(t, err, "ValidateGameResults should not return an error")
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestValidateGameResultsSuccessOnMultipleEntries(t *testing.T) {
+	mockQuerier := test_helpers.NewMockQuerier()
+
+	instance := NewGameResultDAO(mockQuerier)
+
+	ctx := context.TODO()
+
+	userID := uuid.New()
+	balanceExpectedAdjustment := 2100.0
+
+	// Mock select users with pending validation
+	mockQuerier.On("SelectUsersByValidationStatus", ctx, false).Return([]entity.User{
+		{
+			ID:      userID,
+			Balance: 2500.0, // 50 * 50 = 2500
+		},
+	}, nil)
+
+	// Mock lock user row
+	mockQuerier.On("LockUserRow", ctx, mock.Anything, userID).Return(nil)
+
+	// Populate list of game results
+	totalEntries := 50
+	totalGamesToCancel := 10 // 50 * 10 = 500
+	var games []entity.GameResult
+
+	// Add one lost game
+	game := entity.GameResult{
+		ID:                1,
+		UserID:            userID,
+		GameStatus:        entity.GameStatusLost,
+		ValidationStatus:  entity.ValidationStatusPending,
+		TransactionSource: entity.TransactionSourceGame,
+		TransactionID:     fmt.Sprintf("tx%d", 1),
+		Amount:            50.0,
+	}
+	games = append(games, game)
+
+	// Add many wins
+	for i := 0; i < totalEntries; i++ {
+		game := entity.GameResult{
+			ID:                i + 2,
+			UserID:            userID,
+			GameStatus:        entity.GameStatusWin,
+			ValidationStatus:  entity.ValidationStatusPending,
+			TransactionSource: entity.TransactionSourceGame,
+			TransactionID:     fmt.Sprintf("tx%d", i+2),
+			Amount:            50.0,
+		}
+
+		games = append(games, game)
+	}
+
+	// Mock select game results for the user
+	mockQuerier.On("SelectGameResultsByUser", ctx, userID, entity.ValidationStatusPending).Return(games, nil)
+
+	// Mock update game result
+	mockQuerier.On("UpdateGameResult", ctx, mock.Anything, mock.Anything, entity.ValidationStatusAccepted).Times((totalEntries + 1) - totalGamesToCancel).Return(nil)
+	mockQuerier.On("UpdateGameResult", ctx, mock.Anything, mock.Anything, entity.ValidationStatusCanceled).Times(totalGamesToCancel).Return(nil)
+
+	// Mock update user balance
+	mockQuerier.On("UpdateUserBalance", ctx, mock.Anything, userID, balanceExpectedAdjustment, true).Return(nil)
+
+	// Mock transaction operations
+	mockQuerier.On("WithTransaction", mock.Anything, mock.AnythingOfType("func(*sqlx.Tx) error")).Return(nil)
+
+	err := instance.ValidateGameResults(ctx, totalGamesToCancel)
+
+	assert.NoError(t, err, "ValidateGameResults should not return an error")
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestValidateGameResultsSelectUsersError(t *testing.T) {
+	mockQuerier := test_helpers.NewMockQuerier()
+
+	instance := NewGameResultDAO(mockQuerier)
+
+	ctx := context.TODO()
+
+	// Mock select users with pending validation error
+	mockQuerier.On("SelectUsersByValidationStatus", ctx, false).Return(nil, errors.New("database error"))
+
+	err := instance.ValidateGameResults(ctx, 1)
+
+	assert.Error(t, err, "ValidateGameResults should return an error on SelectUsersByValidationStatus")
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestValidateGameResultsSelectGameResultsError(t *testing.T) {
+	mockQuerier := test_helpers.NewMockQuerier()
+
+	instance := NewGameResultDAO(mockQuerier)
+
+	ctx := context.TODO()
+
+	userID := uuid.New()
+
+	// Mock select users with pending validation
+	mockQuerier.On("SelectUsersByValidationStatus", ctx, false).Return([]entity.User{
+		{
+			ID:      userID,
+			Balance: 100.0,
+		},
+	}, nil)
+
+	// Mock select game results for the user error
+	mockQuerier.On("SelectGameResultsByUser", ctx, userID, entity.ValidationStatusPending).Return(nil, errors.New("database error"))
+
+	err := instance.ValidateGameResults(ctx, 1)
+
+	assert.Error(t, err, "ValidateGameResults should return an error on SelectGameResultsByUser")
+	mockQuerier.AssertExpectations(t)
 }

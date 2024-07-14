@@ -29,6 +29,12 @@ const (
 
 func ParseTransactionSource(value interface{}) *TransactionSource {
 	source := TransactionSource(value.(string))
+
+	if source != TransactionSourceGame &&
+		source != TransactionSourceServer &&
+		source != TransactionSourcePayment {
+		return nil
+	}
 	return &source
 }
 
@@ -68,4 +74,10 @@ type GameResult struct {
 	TransactionID     string            `db:"transaction_id" json:"transaction_id"`
 	Amount            float64           `db:"amount" json:"amount"`
 	CreatedAt         time.Time         `db:"created_at" json:"created_at"`
+}
+
+func (dm *GameResult) ShouldBeCanceled() bool {
+
+	// Check it the ID is odd
+	return dm.ID%2 != 0
 }

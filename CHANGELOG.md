@@ -1,5 +1,11 @@
 # Change Log
 
+
+## v0.0.9
+
+- Implement game results validation
+  
+
 ## v0.0.8
 
 - Implement game results business logic

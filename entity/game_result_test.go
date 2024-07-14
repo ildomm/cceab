@@ -119,3 +119,50 @@ func TestGameResult(t *testing.T) {
 		t.Errorf("Expected CreatedAt %v, got %v", createdAt, gameResult.CreatedAt)
 	}
 }
+
+func TestParseTransactionSource(t *testing.T) {
+	tests := []struct {
+		name  string
+		input interface{}
+		want  TransactionSource
+	}{
+		{"Game Source", "game", TransactionSourceGame},
+		{"Server Source", "server", TransactionSourceServer},
+		{"Payment Source", "payment", TransactionSourcePayment},
+		{"Invalid Source", "invalid", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ParseTransactionSource(tt.input.(string))
+
+			if got != nil && tt.want != *got {
+				t.Errorf("ParseTransactionSource() = %v, want %v", *got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGameResultShouldBeCanceled(t *testing.T) {
+	tests := []struct {
+		name string
+		id   int
+		want bool
+	}{
+		{"Odd ID", 1, true},
+		{"Even ID", 2, false},
+		{"Zero ID", 0, false}, // Assuming ID 0 should be canceled
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gameResult := GameResult{
+				ID: tt.id,
+			}
+			got := gameResult.ShouldBeCanceled()
+			if got != tt.want {
+				t.Errorf("ShouldBeCanceled() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

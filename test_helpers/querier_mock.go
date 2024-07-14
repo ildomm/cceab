@@ -135,7 +135,7 @@ func (m *MockQuerier) UpdateUserBalance(ctx context.Context, txn sqlx.Tx, userId
 	return args.Error(0)
 }
 
-func (m *MockQuerier) UpdateGameResult(ctx context.Context, txn sqlx.Tx, gameResultId uuid.UUID, validationStatus entity.ValidationStatus) error {
+func (m *MockQuerier) UpdateGameResult(ctx context.Context, txn sqlx.Tx, gameResultId int, validationStatus entity.ValidationStatus) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
