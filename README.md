@@ -66,7 +66,7 @@ Steps to deploy the application using Docker:
 5. The Game Results API endpoint can be reached at `http://localhost:8000/api/v1/users/11111111-1111-1111-1111-111111111111/game_results`
 6. To send a post request to the API endpoint, you can use the following curl command:
    ```bash
-   curl -X POST http://localhost:8000/api/v1/users/11111111-1111-1111-1111-111111111111/game_results -H 'Content-Type: application/json' -H "Source-Type: Game" -d "{\"state\": \"win\", \"amount\": \"10.15\", \"transactionId\": \"12\"}" 
+   curl -X POST http://localhost:8000/api/v1/users/11111111-1111-1111-1111-111111111111/game_results -H 'Content-Type: application/json' -H "Source-Type: game" -d "{\"state\": \"win\", \"amount\": \"10.15\", \"transactionId\": \"12\"}" 
    ```
 
 ## Testing
