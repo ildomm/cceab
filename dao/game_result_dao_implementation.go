@@ -26,6 +26,7 @@ func NewGameResultDAO(querier database.Querier) *gameResultDAO {
 // It returns an error if the transaction is invalid or if there is an error creating the game result
 func (dm *gameResultDAO) CreateGameResult(ctx context.Context, userId uuid.UUID, gameStatus entity.GameStatus, amount float64, transactionSource entity.TransactionSource, transactionID string) (*entity.GameResult, error) {
 
+	// Check the transaction and its related user
 	balance := 0.0
 	if user, err := dm.validateTransaction(ctx, userId, gameStatus, amount, transactionID); err != nil {
 		return nil, err
@@ -43,11 +44,15 @@ func (dm *gameResultDAO) CreateGameResult(ctx context.Context, userId uuid.UUID,
 		CreatedAt:         time.Now(),
 	}
 
+	// Perform the whole operation inside a db transaction
 	err := dm.querier.WithTransaction(ctx, func(txn *sqlx.Tx) error {
-		if err := dm.persistGameResultTransaction(ctx, txn, userId, gameResult, balance); err != nil {
+		if err := dm.persistGameResultTransaction(ctx, txn, userId, &gameResult, balance); err != nil {
 			log.Printf("error persisting game result: %v", err)
 			return err
 		}
+
+		// Commit the transaction
+		// Success, continue with the transaction commit
 		return nil
 	})
 	if err != nil {
@@ -79,6 +84,7 @@ func (dm *gameResultDAO) validateTransaction(ctx context.Context, userId uuid.UU
 		return nil, entity.ErrUserNotFound
 	}
 
+	// No negative balance allowed
 	if gameStatus == entity.GameStatusLost && user.Balance < amount {
 		return nil, entity.ErrUserNegativeBalance
 	}
@@ -95,12 +101,14 @@ func (dm *gameResultDAO) calculateNewBalance(currentBalance float64, gameStatus 
 }
 
 // persistGameResultTransaction persists the game result transaction
-func (dm *gameResultDAO) persistGameResultTransaction(ctx context.Context, txn *sqlx.Tx, userId uuid.UUID, gameResult entity.GameResult, balance float64) error {
+func (dm *gameResultDAO) persistGameResultTransaction(ctx context.Context, txn *sqlx.Tx, userId uuid.UUID, gameResult *entity.GameResult, balance float64) error {
+
+	// No other processes can update the user until end of this transaction
 	if err := dm.querier.LockUserRow(ctx, *txn, userId); err != nil {
 		return fmt.Errorf("locking user row: %w", err)
 	}
 
-	id, err := dm.querier.InsertGameResult(ctx, *txn, gameResult)
+	id, err := dm.querier.InsertGameResult(ctx, *txn, *gameResult)
 	if err != nil {
 		return fmt.Errorf("inserting game result: %w", err)
 	}
@@ -117,6 +125,8 @@ func (dm *gameResultDAO) persistGameResultTransaction(ctx context.Context, txn *
 // It cancels the game results that should be canceled and approves the rest
 // It returns an error if there is an error validating the game results
 func (dm *gameResultDAO) ValidateGameResults(ctx context.Context, totalGamesToCancel int) error {
+
+	// Select the latest users that have not been validated
 	users, err := dm.querier.SelectUsersByValidationStatus(ctx, false)
 	if err != nil {
 		return fmt.Errorf("selecting users by validation status: %w", err)
@@ -133,6 +143,8 @@ func (dm *gameResultDAO) ValidateGameResults(ctx context.Context, totalGamesToCa
 
 // validateUserGameResults validates the game results for a user
 func (dm *gameResultDAO) validateUserGameResults(ctx context.Context, user entity.User, totalGamesToCancel int) error {
+
+	// Select the game results for the user that are pending validation
 	gameResults, err := dm.querier.SelectGameResultsByUser(ctx, user.ID, entity.ValidationStatusPending)
 	if err != nil {
 		return fmt.Errorf("selecting game results by user: %w", err)
@@ -141,11 +153,17 @@ func (dm *gameResultDAO) validateUserGameResults(ctx context.Context, user entit
 	balance := user.Balance
 	totalTransactionsCanceled := 0
 
+	// Perform the whole operation inside a db transaction
 	err = dm.querier.WithTransaction(ctx, func(txn *sqlx.Tx) error {
+
+		// No other processes can update the user until end of this transaction
 		if err := dm.querier.LockUserRow(ctx, *txn, user.ID); err != nil {
 			return fmt.Errorf("locking user row: %w", err)
 		}
 
+		// Check all the game results, until:
+		// - All the transactions to cancel have been canceled, based on the limit (totalGamesToCancel)
+		// - All the rest of the transactions have been approved
 		for _, gameResult := range gameResults {
 			if totalTransactionsCanceled < totalGamesToCancel && gameResult.ShouldBeCanceled() {
 				if err := dm.cancelGameResult(ctx, txn, gameResult, &balance); err != nil {
@@ -159,10 +177,13 @@ func (dm *gameResultDAO) validateUserGameResults(ctx context.Context, user entit
 			}
 		}
 
+		// Reset the user balance
 		if err := dm.querier.UpdateUserBalance(ctx, *txn, user.ID, balance, true); err != nil {
 			return fmt.Errorf("updating user balance: %w", err)
 		}
 
+		// Commit the transaction
+		// Success, continue with the transaction commit
 		return nil
 	})
 	if err != nil {
