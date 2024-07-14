@@ -172,12 +172,21 @@ func (q *PostgresQuerier) InsertGameResult(ctx context.Context, txn sqlx.Tx, gam
 	return id, err
 }
 
-const lockUserRowSQL = `SELECT * FROM users WHERE id = $1 FOR UPDATE;`
+const lockUserRowStep1SQL = `LOCK TABLE users IN ROW EXCLUSIVE MODE;`
+const lockUserRowStep2SQL = `SELECT * FROM users WHERE id = $1 FOR UPDATE;`
 
 func (q *PostgresQuerier) LockUserRow(ctx context.Context, txn sqlx.Tx, userId uuid.UUID) error {
-	txn.QueryRowContext(ctx, lockUserRowSQL, userId)
+	_, err := txn.ExecContext(ctx, lockUserRowStep1SQL)
+	if err != nil {
+		return err
+	}
 
-	return nil
+	_, err = txn.ExecContext(ctx, lockUserRowStep2SQL, userId)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
 
 const selectUserSQL = `SELECT * FROM users WHERE id = $1`

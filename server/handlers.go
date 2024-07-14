@@ -87,11 +87,12 @@ func (h *gameResultHandler) CreateGameResultFunc(w http.ResponseWriter, r *http.
 // Transform entity.GameResult to server.GameResultResponse
 func transformGameResultResponse(gameResult entity.GameResult) GameResultResponse {
 	return GameResultResponse{
-		ID:            gameResult.ID,
-		UserID:        gameResult.UserID,
-		GameStatus:    gameResult.GameStatus,
-		Amount:        gameResult.Amount,
-		TransactionID: gameResult.TransactionID,
-		CreatedAt:     gameResult.CreatedAt,
+		ID:                gameResult.ID,
+		UserID:            gameResult.UserID,
+		GameStatus:        gameResult.GameStatus,
+		Amount:            gameResult.Amount,
+		TransactionSource: gameResult.TransactionSource,
+		TransactionID:     gameResult.TransactionID,
+		CreatedAt:         gameResult.CreatedAt,
 	}
 }

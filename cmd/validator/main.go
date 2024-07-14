@@ -2,15 +2,20 @@ package main
 
 import (
 	"context"
+	"github.com/ildomm/cceab/dao"
 	"github.com/ildomm/cceab/database"
 	"github.com/ildomm/cceab/system"
 	"log"
 	"os"
+	"time"
 )
 
 var (
 	gitSha = "unknown" // Populated with the last Git commit SHA (short) at build time
 	semVer = "unknown" // Populated with semantic version at build time
+
+	pauseDuration      = 1 * time.Minute
+	totalGamesToCancel = 10
 )
 
 func main() {
@@ -44,5 +49,31 @@ func main() {
 	}
 	defer querier.Close()
 
-	// TODO: Implement the rest of the main function
+	// Initialize manager
+	gameResultManager := dao.NewGameResultDAO(querier)
+
+	// Run the pipeline
+	go run(ctx, gameResultManager)
+
+	log.Printf("caught signal, terminating. %v", system.WaitForSignal().String())
+}
+
+// Run starts the validation pipeline
+func run(ctx context.Context, gameResultManager dao.GameResultDAO) {
+	log.Printf("starting validating game results")
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Printf("stopping pipeline")
+			return
+		default:
+			err := gameResultManager.ValidateGameResults(ctx, totalGamesToCancel)
+			if err != nil {
+				log.Printf("error validating game results: %s", err)
+			}
+
+			system.SleepWithContext(ctx, pauseDuration)
+		}
+	}
 }

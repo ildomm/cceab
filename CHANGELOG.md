@@ -1,6 +1,10 @@
 # Change Log
 
 
+## v0.1.0
+
+- Implement validator pipeline
+
 ## v0.0.10
 
 - Implement database operations

@@ -101,7 +101,7 @@ func (dm *gameResultDAO) CreateGameResult(ctx context.Context, userId uuid.UUID,
 		return nil, entity.ErrCreatingGameResult
 	}
 
-	return nil, nil
+	return &gameResult, nil
 }
 
 // ValidateGameResults validates the game results in post-game processing.
@@ -112,6 +112,7 @@ func (dm *gameResultDAO) ValidateGameResults(ctx context.Context, totalGamesToCa
 	if err != nil {
 		return err
 	}
+	log.Printf("validating latest users. Total users %d", len(users))
 
 	// Iterate over the pending users
 	for _, user := range users {
@@ -184,6 +185,8 @@ func (dm *gameResultDAO) ValidateGameResults(ctx context.Context, totalGamesToCa
 		if err != nil {
 			return err
 		}
+
+		log.Printf("%d game results cancelled for user %s.", totalTransactionsCanceled, user.ID)
 	}
 
 	return nil

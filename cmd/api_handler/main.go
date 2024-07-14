@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/ildomm/cceab/dao"
 	"github.com/ildomm/cceab/database"
 	"github.com/ildomm/cceab/server"
 	"github.com/ildomm/cceab/system"
@@ -52,12 +53,12 @@ func main() {
 	defer querier.Close()
 
 	// Initialize manager
-	//gameResultManager := dao.NewGameResultDAO(querier)
+	gameResultManager := dao.NewGameResultDAO(querier)
 
 	// Initialize the server
 	server := server.NewServer()
 	server.WithListenAddress(httpServerPort)
-	//server.WithGameResultManager(gameResultManager)
+	server.WithGameResultManager(gameResultManager)
 
 	log.Println("Starting server on", server.ListenAddress())
 
