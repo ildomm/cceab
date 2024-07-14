@@ -7,6 +7,7 @@ import (
 	"github.com/ildomm/cceab/entity"
 	"github.com/jmoiron/sqlx"
 	"log"
+	"time"
 )
 
 type gameResultDAO struct {
@@ -64,6 +65,7 @@ func (dm *gameResultDAO) CreateGameResult(ctx context.Context, userId uuid.UUID,
 		TransactionSource: transactionSource,
 		TransactionID:     transactionID,
 		Amount:            amount,
+		CreatedAt:         time.Now(),
 	}
 
 	// Starts a new transaction

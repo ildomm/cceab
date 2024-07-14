@@ -2,18 +2,22 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"errors"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/google/uuid"
+	"github.com/ildomm/cceab/entity"
 	"github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"log"
 	"net/url"
+	"time"
 )
 
 type PostgresQuerier struct {
@@ -144,3 +148,134 @@ func (q *PostgresQuerier) WithTransaction(ctx context.Context, fn func(*sqlx.Tx)
 }
 
 ////////////////////////////////// Database Querier domain operations /////////////////////////////////////////////////////////
+
+const insertGameResultSQL = `
+	INSERT INTO game_results ( user_id, game_status, validation_status, transaction_source, transaction_id, amount, created_at)
+	VALUES                 ( $1,      $2,          $3,                $4,                 $5,             $6,     $7)
+	RETURNING id`
+
+func (q *PostgresQuerier) InsertGameResult(ctx context.Context, txn sqlx.Tx, gameResult entity.GameResult) (int, error) {
+	var id int
+
+	err := txn.GetContext(
+		ctx,
+		&id,
+		insertGameResultSQL,
+		gameResult.UserID,
+		gameResult.GameStatus,
+		gameResult.ValidationStatus,
+		gameResult.TransactionSource,
+		gameResult.TransactionID,
+		gameResult.Amount,
+		gameResult.CreatedAt)
+
+	return id, err
+}
+
+const lockUserRowSQL = `SELECT * FROM users WHERE id = $1 FOR UPDATE;`
+
+func (q *PostgresQuerier) LockUserRow(ctx context.Context, txn sqlx.Tx, userId uuid.UUID) error {
+	txn.QueryRowContext(ctx, lockUserRowSQL, userId)
+
+	return nil
+}
+
+const selectUserSQL = `SELECT * FROM users WHERE id = $1`
+
+func (q *PostgresQuerier) SelectUser(ctx context.Context, userId uuid.UUID) (*entity.User, error) {
+	var user entity.User
+
+	err := q.dbConn.GetContext(
+		ctx,
+		&user,
+		selectUserSQL,
+		userId)
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return &user, err
+	}
+	return &user, nil
+}
+
+const selectUserByValidationStatusSQL = `SELECT * FROM users WHERE games_result_validated = $1`
+
+func (q *PostgresQuerier) SelectUsersByValidationStatus(ctx context.Context, validationStatus bool) ([]entity.User, error) {
+	var users []entity.User
+
+	err := q.dbConn.SelectContext(
+		ctx,
+		&users,
+		selectUserByValidationStatusSQL,
+		validationStatus)
+
+	return users, err
+}
+
+const selectCheckTransactionSQL = `SELECT count(*) FROM game_results WHERE transaction_id = $1`
+
+func (q *PostgresQuerier) CheckTransactionID(ctx context.Context, transactionId string) (bool, error) {
+
+	row := q.dbConn.QueryRowContext(ctx, selectCheckTransactionSQL, transactionId)
+	var count int64
+
+	err := row.Scan(&count)
+
+	if count > 0 {
+		return true, err
+	} else {
+		return false, err
+	}
+}
+
+const selectGameResultsByUserSQL = `SELECT * FROM game_results WHERE user_id = $1 AND validation_status = $2 ORDER BY created_at DESC`
+
+func (q *PostgresQuerier) SelectGameResultsByUser(ctx context.Context, userId uuid.UUID, validationStatus entity.ValidationStatus) ([]entity.GameResult, error) {
+	var gameResults []entity.GameResult
+
+	err := q.dbConn.SelectContext(
+		ctx,
+		&gameResults,
+		selectGameResultsByUserSQL,
+		userId,
+		validationStatus)
+
+	return gameResults, err
+}
+
+const updateUserSQL = `
+	UPDATE users
+	SET 
+		balance = :balance,
+		games_result_validated = :games_result_validated,
+		last_game_result_at = :last_game_result_at
+	WHERE id = :id`
+
+func (q *PostgresQuerier) UpdateUserBalance(ctx context.Context, txn sqlx.Tx, userId uuid.UUID, balance float64, validationStatus bool) error {
+	user := entity.User{
+		ID:                   userId,
+		Balance:              balance,
+		GamesResultValidated: sql.NullBool{Bool: validationStatus, Valid: true},
+		LastGameResultAt:     sql.NullTime{Time: time.Now(), Valid: true},
+	}
+
+	_, err := txn.NamedExecContext(ctx, updateUserSQL, user)
+
+	return err
+}
+
+const updateGameResultSQL = `
+	UPDATE game_results
+	SET 
+		validation_status = :validation_status
+	WHERE id = :id`
+
+func (q *PostgresQuerier) UpdateGameResult(ctx context.Context, txn sqlx.Tx, gameResultId int, validationStatus entity.ValidationStatus) error {
+	gameResult := entity.GameResult{
+		ID:               gameResultId,
+		ValidationStatus: validationStatus,
+	}
+
+	_, err := txn.NamedExecContext(ctx, updateGameResultSQL, gameResult)
+
+	return err
+}

@@ -32,6 +32,6 @@ jobs:
       with:
         profile: cover.out
         local-prefix: github.com/ildomm/cceab
-        threshold-total: 50
+        threshold-total: 70
         git-branch: badges
         git-token: ${{ github.ref_name == 'main' && secrets.GITHUB_TOKEN || '' }}

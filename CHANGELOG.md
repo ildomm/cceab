@@ -1,6 +1,10 @@
 # Change Log
 
 
+## v0.0.10
+
+- Implement database operations
+
 ## v0.0.9
 
 - Implement game results validation
