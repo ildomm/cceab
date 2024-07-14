@@ -17,7 +17,7 @@ The application consists of two parts:
 
 #### API endpoints
 - `GET /api/v1/health` - Returns the health of the service.
-- `POST /api/v1/device/{id}/game_results` - Persists the game results of the user with the given id.
+- `POST /api/v1/users/{id}/game_results` - Persists the game results of the user with the given id.
 
 ### 2. Game Results validator
 - Background job that validate the user's account balance based on the games results.
