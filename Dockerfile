@@ -28,7 +28,7 @@ COPY --from=builder /validator .
 EXPOSE 8000
 
 # Set environment variable for the database URL
-ENV DATABASE_URL=postgres://postgres:password@postgres:5432/cceab_development?sslmode=disable
+ENV DATABASE_URL=postgres://postgres:password@postgres:5433/cceab_development?sslmode=disable
 
 # API handler
 ENTRYPOINT ["./api_handler"]
