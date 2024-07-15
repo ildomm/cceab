@@ -1,6 +1,7 @@
 package system
 
 import (
+	"github.com/ildomm/cceab/server"
 	"github.com/stretchr/testify/require"
 	"os"
 	"os/signal"
@@ -70,7 +71,7 @@ func TestValidDbURL(t *testing.T) {
 func TestParseHTTPPortDefault(t *testing.T) {
 	port, err := ParseHTTPPort([]string{})
 	require.NoError(t, err)
-	require.Equal(t, HttpServerPortDefault, port)
+	require.Equal(t, server.DefaultListenAddress, port)
 }
 
 func TestParseHTTPPortCustom(t *testing.T) {

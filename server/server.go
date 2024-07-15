@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DefaultListenAddress     = 8080
+	DefaultListenAddress     = 8000
 	DefaultReadHeaderTimeout = time.Second * 15
 	DefaultWriteTimeout      = time.Second * 15
 	DefaultReadTimeout       = time.Second * 15

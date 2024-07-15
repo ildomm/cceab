@@ -66,7 +66,7 @@ func (h *gameResultHandler) CreateGameResultFunc(w http.ResponseWriter, r *http.
 	vars := mux.Vars(r)
 	userId, err := uuid.Parse(vars["id"])
 	if err != nil {
-		WriteErrorResponse(w, http.StatusBadRequest, []string{"invalid user Id"})
+		WriteErrorResponse(w, http.StatusBadRequest, []string{entity.ErrInvalidUser.Error()})
 		return
 	}
 

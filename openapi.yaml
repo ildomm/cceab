@@ -34,7 +34,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [game, server, client]
+            enum: [game, server, payment]
       requestBody:
         required: true
         content:

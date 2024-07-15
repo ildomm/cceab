@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ildomm/cceab/entity"
 	"log"
 	"net/http"
 	"runtime"
@@ -78,7 +79,7 @@ func (rm RecoverMiddleware) perform(next http.Handler) http.Handler {
 // that implements the same signature as RecoveryResponse
 func defaultRecoveryResponse() RecoveryResponse {
 	return func(ctx context.Context, w http.ResponseWriter) {
-		WriteErrorResponse(w, http.StatusInternalServerError, []string{"Internal error"})
+		WriteErrorResponse(w, http.StatusInternalServerError, []string{entity.ErrServerInternal.Error()})
 	}
 }
 

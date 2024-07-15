@@ -1,6 +1,7 @@
 package system
 
 import (
+	"github.com/ildomm/cceab/server"
 	"os"
 	"os/signal"
 	"syscall"
@@ -63,10 +64,6 @@ func ParseDBConnURL(args []string) (string, error) {
 	return dBConnURL, nil
 }
 
-const (
-	HttpServerPortDefault = 8000
-)
-
 func ParseHTTPPort(args []string) (int, error) {
 	var httpServerPort int
 
@@ -74,8 +71,8 @@ func ParseHTTPPort(args []string) (int, error) {
 	fs.IntVar(
 		&httpServerPort,
 		"http-server-port",
-		HttpServerPortDefault,
-		fmt.Sprintf("The http server port to listen on for incoming API requests, eg: '8080', defaults to %d", HttpServerPortDefault),
+		server.DefaultListenAddress,
+		fmt.Sprintf("The http server port to listen on for incoming API requests, eg: '8080', defaults to %d", server.DefaultListenAddress),
 	)
 
 	err := fs.Parse(args)
