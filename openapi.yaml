@@ -1,0 +1,101 @@
+openapi: 3.0.0
+info:
+  title: User's games results API
+  version: 0.1.2
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /api/v1/health:
+    get:
+      summary: Evaluate the health of the service
+      responses:
+        '200':
+          description: Health status of the service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/healthResponse'
+
+  /api/v1/users/{id}/game_results:
+    post:
+      summary: Create a game result for a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Source-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            enum: [game, server, client]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/gameResultRequest'
+      responses:
+        '201':
+          description: Game result created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gameResultResponse'
+
+components:
+  schemas:
+    healthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        version:
+          type: string
+
+    gameResultRequest:
+      type: object
+      properties:
+        state:
+          type: string
+          description: The status of the game
+        amount:
+          type: string
+          description: The amount involved in the transaction
+        transactionId:
+          type: string
+          description: The ID of the transaction
+
+    gameResultResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier of the game result
+        userId:
+          type: string
+          format: uuid
+          description: The ID of the user
+        state:
+          type: string
+          description: The status of the game
+        source:
+          type: string
+          description: The source of the transaction
+        transactionId:
+          type: string
+          description: The ID of the transaction
+        amount:
+          type: number
+          format: float
+          description: The amount involved in the transaction
+        createdAt:
+          type: string
+          format: date-time
+          description: The timestamp when the game result was created
