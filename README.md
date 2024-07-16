@@ -1,29 +1,29 @@
+
 [![tests](https://github.com/ildomm/cceab/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ildomm/cceab/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ildomm/cceab?cache=v1)](https://goreportcard.com/report/github.com/ildomm/cceab)
 ![coverage](https://raw.githubusercontent.com/ildomm/cceab/badges/.badges/main/coverage.svg)
 
 # cceab
-User's account balance simulator.
+User Account Balance Simulator
 
-Main features:
-- Persist user's games results
-- Validate user's account balance based on the games results
+## Main Features
+- Persistence of user game results
+- Validation of user account balances based on game results
 
 ## Architecture
+The application is composed of two primary components:
 
-The application consists of two parts:
 ### 1. API Handler
-- The API Handler is responsible for handling the HTTP requests in regards to games results.
+The API Handler manages HTTP requests related to game results.
 
-#### API endpoints
-- `GET /api/v1/health` - Returns the health of the service.
-- `POST /api/v1/users/{id}/game_results` - Persists the game results of the user with the given id.
+#### API Endpoints
+- `GET /api/v1/health` - Returns the health status of the service.
+- `POST /api/v1/users/{id}/game_results` - Persists the game results for the specified user.
 
-### 2. Game Results validator
-- Background job that validate the user's account balance based on the games results.
+### 2. Game Results Validator
+A background job that validates user account balance based on game results.
 
-### Database schema
-
+### Database Schema
 ```mermaid
 ---
 title: Tables.
@@ -33,25 +33,25 @@ erDiagram
            
 ```
 
-## Build process
-- Type `make build` to generate the binaries in the `bin` folder.
+## Build Process
+- Execute `make build` to generate the binaries in the `bin` directory.
 
-### API Handler
-- The entrypoint is in `cmd/api_handler/main.go`
-
-### Game Results validator
-- The entrypoint is in `cmd/validator/main.go`
+### Entry Points
+- API Handler: `cmd/api_handler/main.go`
+- Game Results Validator: `cmd/validator/main.go`
 
 ## Development
 
-### Environment variables
-Required environment variable for both application components:
-- `DATABASE_URL` - the Postgres database URL, eg: `postgres://user:password@host:port/database`
+### Environment Variables
+The following environment variable is required for both application components:
+- `DATABASE_URL` - The Postgres database URL, e.g., `postgres://user:password@host:port/database`
 
 ## Deployment
-Steps to run the application using Docker Compose:
-1. Run `docker-compose up --build`
-2. There will be already 9 users created in the database with the following ids:
+To deploy the application using Docker Compose, follow these steps:
+- Execute `docker-compose up --build`
+
+### To perform a manual test:
+1. The database will be pre-populated with users having the following IDs:
    - `11111111-1111-1111-1111-111111111111`
    - `22222222-2222-2222-2222-222222222222`
    - `33333333-3333-3333-3333-333333333333`
@@ -61,32 +61,31 @@ Steps to run the application using Docker Compose:
    - `77777777-7777-7777-7777-777777777777`
    - `88888888-8888-8888-8888-888888888888`
    - `99999999-9999-9999-9999-999999999999`
-3. The API Handler will be available at `http://localhost:8080`
-4. The Game Results validator will be running in the background.
-5. The Game Results API endpoint can be reached at `http://localhost:8000/api/v1/users/11111111-1111-1111-1111-111111111111/game_results`
-6. To send a post request to the API endpoint, you can use the following curl command:
+2. The Game Results Validator will run as a background process.
+3. Send a POST request to the API endpoint, using the following command:
    ```bash
    curl -X POST http://localhost:8000/api/v1/users/11111111-1111-1111-1111-111111111111/game_results -H 'Content-Type: application/json' -H "Source-Type: game" -d "{\"state\": \"win\", \"amount\": \"10.15\", \"transactionId\": \"12\"}" 
    ```
 
 ## Testing
-### Local tests:
-#### Unit tests:
-Unit tests are all written with the standard go testing library.
-- Type `make unit-test` to run them.
 
-#### Tests coverage:
-- Type `make coverage-report` to generate an HTML report with the tests coverage.
-- Type `make coverage-total` to check the total tests coverage.
+### Local Tests
+#### Unit Tests
+Unit tests are implemented using the standard Go testing library.
+- Execute `make unit-test` to run the tests.
 
-## Future improvements
-- Use Store procedures to calculate the balance.
-- Allow the Validator to be configurable for pause interval and total of games to validate.
-- (pending)
+#### Test Coverage
+- Execute `make coverage-report` to generate an HTML report of the test coverage.
+- Execute `make coverage-total` to view the total test coverage.
 
-## Missing features
-- 90% tests code coverage.
+## Future Improvements
+- Implement stored procedures to calculate account balances.
+- Allow configuration of the Validator for pause intervals and the number of games to validate.
+- Additional enhancements are pending.
+
+## Missing Features
+- Achieving 90% test code coverage.
 
 ## Considerations
-- The mention of 'balance should be corrected..' in the requirements, obligates the system to change the balance twice, which represents a risk. 
-- We could avoid updating the balance twice if changing the design slightly.
+- The requirement to "correct the balance" necessitates updating the balance twice, introducing a risk.
+- This risk can be mitigated by adjusting the design.
