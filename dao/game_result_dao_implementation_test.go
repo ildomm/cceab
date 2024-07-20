@@ -15,7 +15,6 @@ import (
 
 func TestCreateGameResultSuccess(t *testing.T) {
 	mockQuerier := test_helpers.NewMockQuerier()
-	mockGameResultDAO := test_helpers.NewMockGameResultDAO()
 
 	instance := NewGameResultDAO(mockQuerier)
 
@@ -41,7 +40,6 @@ func TestCreateGameResultSuccess(t *testing.T) {
 
 	assert.NoError(t, err, "CreateGameResult should not return an error")
 	mockQuerier.AssertExpectations(t)
-	mockGameResultDAO.AssertExpectations(t)
 
 	// Count the game results
 	mockQuerier.On("SelectGameResultsByUser", ctx, mock.Anything, mock.Anything)
@@ -52,7 +50,6 @@ func TestCreateGameResultSuccess(t *testing.T) {
 
 func TestCreateGameResultTransactionIDExists(t *testing.T) {
 	mockQuerier := test_helpers.NewMockQuerier()
-	mockGameResultDAO := test_helpers.NewMockGameResultDAO()
 
 	instance := NewGameResultDAO(mockQuerier)
 
@@ -70,12 +67,10 @@ func TestCreateGameResultTransactionIDExists(t *testing.T) {
 
 	assert.EqualError(t, err, entity.ErrTransactionIdExists.Error(), "CreateGameResult should return ErrTransactionIdExists")
 	mockQuerier.AssertExpectations(t)
-	mockGameResultDAO.AssertExpectations(t)
 }
 
 func TestCreateGameResultUserNotFound(t *testing.T) {
 	mockQuerier := test_helpers.NewMockQuerier()
-	mockGameResultDAO := test_helpers.NewMockGameResultDAO()
 
 	instance := NewGameResultDAO(mockQuerier)
 
@@ -94,12 +89,10 @@ func TestCreateGameResultUserNotFound(t *testing.T) {
 
 	assert.EqualError(t, err, entity.ErrUserNotFound.Error(), "CreateGameResult should return ErrUserNotFound")
 	mockQuerier.AssertExpectations(t)
-	mockGameResultDAO.AssertExpectations(t)
 }
 
 func TestCreateGameResultInsufficientBalance(t *testing.T) {
 	mockQuerier := test_helpers.NewMockQuerier()
-	mockGameResultDAO := test_helpers.NewMockGameResultDAO()
 
 	instance := NewGameResultDAO(mockQuerier)
 
@@ -121,12 +114,10 @@ func TestCreateGameResultInsufficientBalance(t *testing.T) {
 
 	assert.EqualError(t, err, entity.ErrUserNegativeBalance.Error(), "CreateGameResult should return ErrUserNegativeBalance")
 	mockQuerier.AssertExpectations(t)
-	mockGameResultDAO.AssertExpectations(t)
 }
 
 func TestCreateGameResultDatabaseError(t *testing.T) {
 	mockQuerier := test_helpers.NewMockQuerier()
-	mockGameResultDAO := test_helpers.NewMockGameResultDAO()
 
 	instance := NewGameResultDAO(mockQuerier)
 
@@ -151,7 +142,6 @@ func TestCreateGameResultDatabaseError(t *testing.T) {
 
 	assert.EqualError(t, err, entity.ErrCreatingGameResult.Error(), "CreateGameResult should return ErrCreatingGameResult")
 	mockQuerier.AssertExpectations(t)
-	mockGameResultDAO.AssertExpectations(t)
 
 	// Count the game results
 	mockQuerier.On("SelectGameResultsByUser", ctx, mock.Anything, mock.Anything)

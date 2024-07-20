@@ -60,6 +60,7 @@ coverage-report: clean deps
 coverage-total: clean deps
 	go test -tags=testing ./... \
 		-coverprofile=build/cover.out github.com/ildomm/cceab/...
+	grep -vE 'main\.go|test_helpers' build/cover.out > build/cover.temp && mv build/cover.temp build/cover.out
 	go tool cover -func=build/cover.out | grep total
 
 .PHONY: security-setup

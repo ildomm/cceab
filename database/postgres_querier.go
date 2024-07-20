@@ -200,8 +200,12 @@ func (q *PostgresQuerier) SelectUser(ctx context.Context, userId uuid.UUID) (*en
 		selectUserSQL,
 		userId)
 
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return &user, err
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		} else {
+			return nil, err
+		}
 	}
 	return &user, nil
 }
