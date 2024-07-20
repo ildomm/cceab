@@ -27,7 +27,7 @@ jobs:
     - name: Generate test coverage report
       run: |
         go test ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
-        grep -v 'main\.go' ./cover.out > ./cover.temp && mv ./cover.temp ./cover.out
+        grep -vE 'main\.go|test_helpers' ./cover.out > ./cover.temp && mv ./cover.temp ./cover.out
       shell: bash
 
     - name: Generate test coverage badge
