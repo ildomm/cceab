@@ -8,11 +8,13 @@ import (
 	"github.com/ildomm/cceab/entity"
 	"github.com/jmoiron/sqlx"
 	"log"
+	"sync"
 	"time"
 )
 
 type gameResultDAO struct {
 	querier database.Querier
+	lock    sync.Mutex
 }
 
 // NewGameResultDAO creates a new game result DAO
@@ -25,6 +27,8 @@ func NewGameResultDAO(querier database.Querier) *gameResultDAO {
 // It returns the created game result
 // It returns an error if the transaction is invalid or if there is an error creating the game result
 func (dm *gameResultDAO) CreateGameResult(ctx context.Context, userId uuid.UUID, gameStatus entity.GameStatus, amount float64, transactionSource entity.TransactionSource, transactionID string) (*entity.GameResult, error) {
+	dm.lock.Lock()
+	defer dm.lock.Unlock()
 
 	// Check the transaction and its related user
 	balance := 0.0

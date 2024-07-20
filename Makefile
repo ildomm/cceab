@@ -52,6 +52,7 @@ lint: deps lint-install
 coverage-report: clean deps
 	go test -tags=testing ./... \
 		-coverprofile=build/cover.out github.com/ildomm/cceab/...
+	grep -v 'main\.go' build/cover.out > build/cover.temp && mv build/cover.temp build/cover.out
 	go tool cover -html=build/cover.out -o build/coverage.html
 	echo "** Coverage is available in build/coverage.html **"
 
